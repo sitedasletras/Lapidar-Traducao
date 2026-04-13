@@ -8,6 +8,7 @@ Responsável por:
 – carregar texto no Core
 – definir idioma destino
 – preparar o fluxo tradutório
+– acionar o motor editorial
 – acionar o orquestrador
 */
 
@@ -76,9 +77,17 @@ return this.executarPipelineTraducao()
 
 executarPipelineTraducao(){
 
-let resposta = OrquestradorTraducaoLP.executarFluxo()
+let relatorioEditorial = ""
 
-return resposta
+if(typeof MotorTraducaoEditorialLP !== "undefined"){
+relatorioEditorial = MotorTraducaoEditorialLP.executarTraducaoEditorial()
+}else{
+relatorioEditorial = "Motor tradutório editorial não carregado"
+}
+
+let respostaOrquestrador = OrquestradorTraducaoLP.executarFluxo()
+
+return relatorioEditorial + "\n\n" + respostaOrquestrador
 
 },
 
