@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 <script src="core_traducao_lp.js"></script>
 <script src="glossario_autoral_lp.js"></script>
 <script src="detector_ritmo_narrativo_lp.js"></script>
@@ -15,6 +16,7 @@
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
 <script src="memoria_traducao_lp.js"></script>
+<script src="leitor_arquivo_traducao_lp.js"></script>
 
 <style>
 body{
@@ -75,9 +77,15 @@ box-sizing:border-box;
 font-family:Arial, sans-serif;
 }
 
-input, select, textarea{
+input[type="text"], select, textarea{
 width:100%;
 max-width:100%;
+}
+
+input[type="file"]{
+width:100%;
+background:#ffffff;
+color:#082033;
 }
 
 textarea{
@@ -155,7 +163,7 @@ let texto = document.getElementById("textoLivro").value.trim()
 let idioma = document.getElementById("idiomaDestino").value
 
 if(!texto){
-saida("Cole o texto do livro antes de carregar no Core.")
+saida("Cole o texto do livro ou carregue um arquivo antes de enviar ao Core.")
 return
 }
 
@@ -182,6 +190,25 @@ RegistroTraducaoLP.registrarExecucao("livro_carregado_manual_no_core")
 }
 
 saida(resposta.join("\n"))
+}
+
+async function carregarArquivoLivro(){
+
+let retorno = await LeitorArquivoTraducaoLP.carregarArquivo("arquivoLivro")
+
+if(!retorno.sucesso){
+saida(retorno.mensagem)
+return
+}
+
+document.getElementById("textoLivro").value = retorno.texto || ""
+
+if(!document.getElementById("tituloLivro").value.trim()){
+let nomeSemExtensao = retorno.nome.replace(/\.[^/.]+$/, "")
+document.getElementById("tituloLivro").value = nomeSemExtensao
+}
+
+saida(retorno.mensagem + "\nArquivo: " + retorno.nome)
 }
 
 function executarTraducao(){
@@ -333,6 +360,7 @@ document.getElementById("tituloLivro").value = ""
 document.getElementById("autorLivro").value = ""
 document.getElementById("generoLivro").value = ""
 document.getElementById("textoLivro").value = ""
+document.getElementById("arquivoLivro").value = ""
 saida("Campos do livro limpos.")
 }
 
@@ -388,11 +416,15 @@ document.getElementById("saida").innerText = texto
 <option value="alemao">Alemão</option>
 </select>
 
+<label for="arquivoLivro">Arquivo do livro (.txt ou .docx)</label>
+<input type="file" id="arquivoLivro" accept=".txt,.docx">
+
 <label for="textoLivro">Texto do livro</label>
 <textarea id="textoLivro" placeholder="Cole aqui o capítulo, conto ou livro para tradução..."></textarea>
 
 <div class="blocos">
-<div class="titulo-bloco">Entrada manual do livro</div>
+<div class="titulo-bloco">Entrada do livro</div>
+<button onclick="carregarArquivoLivro()">Carregar arquivo</button>
 <button onclick="carregarLivroNoCore()">Carregar livro no Core</button>
 <button onclick="preencherExemplo()">Preencher exemplo</button>
 <button onclick="limparCamposLivro()">Limpar campos</button>
@@ -444,7 +476,7 @@ document.getElementById("saida").innerText = texto
 <button onclick="limparMemoriaTraducao()">Limpar memória</button>
 </div>
 
-<div id="saida" class="output">Cole o texto do livro, carregue no Core e execute a tradução.</div>
+<div id="saida" class="output">Carregue um arquivo ou cole o texto do livro, envie ao Core e execute a tradução.</div>
 
 </div>
 
@@ -453,4 +485,4 @@ document.getElementById("saida").innerText = texto
 </div>
 
 </body>
-</html>
+</html>o 
