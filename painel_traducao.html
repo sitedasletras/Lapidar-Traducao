@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
+<script src="core_traducao_lp.js"></script>
 <script src="engine_traducao_lp.js"></script>
 <script src="preparador_texto_traducao_lp.js"></script>
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
 <script src="memoria_traducao_lp.js"></script>
+<script src="ponte_lp_segunda_linguas.js"></script>
 
 <style>
 body{
@@ -182,6 +184,26 @@ function limparMemoriaTraducao(){
 let resposta = MemoriaTraducaoLP.limparMemoria()
 document.getElementById("saida").innerText = resposta
 }
+
+function receberPacoteLP(){
+let resposta = PonteLPSegundaLinguas.enviarPacoteTraducao()
+document.getElementById("saida").innerText = resposta
+}
+
+function verPacoteRecebidoLP(){
+let resposta = PonteLPSegundaLinguas.verPacoteTraducao()
+document.getElementById("saida").innerText = resposta
+}
+
+function limparPacoteRecebidoLP(){
+let resposta = PonteLPSegundaLinguas.limparPacoteTraducao()
+document.getElementById("saida").innerText = resposta
+}
+
+function resetarCoreTraducao(){
+let resposta = CoreTraducaoLP.resetar()
+document.getElementById("saida").innerText = resposta
+}
 </script>
 </head>
 
@@ -207,9 +229,16 @@ document.getElementById("saida").innerText = resposta
 </select>
 
 <div class="blocos">
+<button onclick="receberPacoteLP()">Receber obra do Lapidar Pensante</button>
+<button onclick="verPacoteRecebidoLP()">Ver pacote recebido</button>
+<button onclick="limparPacoteRecebidoLP()">Limpar pacote recebido</button>
+</div>
+
+<div class="blocos">
 <button onclick="executarTraducao()">Executar tradução simbiótica</button>
 <button onclick="verTextoPreparado()">Ver texto preparado</button>
-<button onclick="verStatusEngineTraducao()">Ver status do engine</button>
+<button onclick="verStatusEngineTraducao()">Ver status do engine/core</button>
+<button onclick="resetarCoreTraducao()">Resetar core</button>
 </div>
 
 <div class="blocos">
