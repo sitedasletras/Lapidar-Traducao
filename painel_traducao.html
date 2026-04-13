@@ -9,6 +9,7 @@
 <script src="preparador_texto_traducao_lp.js"></script>
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
+<script src="memoria_traducao_lp.js"></script>
 
 <style>
 body{
@@ -111,81 +112,75 @@ text-decoration:underline;
 
 <script>
 function executarTraducao(){
-
 let idioma = document.getElementById("idiomaDestino").value
 let resposta = EngineTraducaoLP.executarTraducao(idioma)
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function verResultadoTraducao(){
-
 let resposta = OrquestradorTraducaoLP.verResultado()
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function limparResultadoTraducao(){
-
 let resposta = OrquestradorTraducaoLP.limparResultado()
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function verHistoricoTraducao(){
-
 let resposta = RegistroTraducaoLP.verHistorico()
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function verUltimaExecucaoTraducao(){
-
 let resposta = RegistroTraducaoLP.ultimaExecucao()
-
 document.getElementById("saida").innerText =
 typeof resposta === "string"
 ? resposta
 : JSON.stringify(resposta, null, 2)
-
 }
 
 function exportarHistoricoTraducao(){
-
 let resposta = RegistroTraducaoLP.exportarHistorico()
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function limparHistoricoTraducao(){
-
 let resposta = RegistroTraducaoLP.limparHistorico()
-
 document.getElementById("saida").innerText = resposta
-
 }
 
 function verTextoPreparado(){
-
 let resposta = PreparadorTextoTraducaoLP.prepararTexto()
-
 document.getElementById("saida").innerText =
 resposta || "Texto não disponível para preparação"
-
 }
 
 function verStatusEngineTraducao(){
-
 let resposta = EngineTraducaoLP.status()
-
 document.getElementById("saida").innerText =
 JSON.stringify(resposta, null, 2)
+}
 
+function salvarMemoriaTraducao(){
+let resposta = MemoriaTraducaoLP.salvarMemoria()
+document.getElementById("saida").innerText = resposta
+}
+
+function carregarMemoriaTraducao(){
+let resposta = MemoriaTraducaoLP.carregarMemoria()
+document.getElementById("saida").innerText =
+resposta + "\n\n" + MemoriaTraducaoLP.verMemoria()
+}
+
+function verMemoriaTraducao(){
+let resposta = MemoriaTraducaoLP.verMemoria()
+document.getElementById("saida").innerText = resposta
+}
+
+function limparMemoriaTraducao(){
+let resposta = MemoriaTraducaoLP.limparMemoria()
+document.getElementById("saida").innerText = resposta
 }
 </script>
 </head>
@@ -227,6 +222,13 @@ JSON.stringify(resposta, null, 2)
 <button onclick="verUltimaExecucaoTraducao()">Ver última execução</button>
 <button onclick="exportarHistoricoTraducao()">Exportar histórico</button>
 <button onclick="limparHistoricoTraducao()">Limpar histórico</button>
+</div>
+
+<div class="blocos">
+<button onclick="salvarMemoriaTraducao()">Salvar memória</button>
+<button onclick="carregarMemoriaTraducao()">Carregar memória</button>
+<button onclick="verMemoriaTraducao()">Ver memória</button>
+<button onclick="limparMemoriaTraducao()">Limpar memória</button>
 </div>
 
 <div id="saida" class="output">Aguardando comando do módulo Segunda Língua(s)...</div>
