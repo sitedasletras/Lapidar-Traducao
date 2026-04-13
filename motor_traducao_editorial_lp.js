@@ -1,6 +1,6 @@
 /*
 MOTOR TRADUTÓRIO EDITORIAL
-Segunda Língua(s)
+Segunda Língua(s) — Lapidar
 
 Responsável por:
 
@@ -20,12 +20,10 @@ analisarGenero(){
 let genero = CoreTraducaoLP.memoria.genero
 
 if(!genero){
-
-return "Genero não identificado"
-
+return "Gênero não identificado"
 }
 
-return "Genero identificado: " + genero
+return "Gênero identificado: " + genero
 
 },
 
@@ -36,9 +34,7 @@ protegerEstiloAutoral(){
 let autor = CoreTraducaoLP.memoria.autor
 
 if(!autor){
-
 return "Autor não identificado"
-
 }
 
 return "Proteção estilística ativada para " + autor
@@ -52,9 +48,7 @@ adaptarCulturalmente(){
 let idioma = CoreTraducaoLP.memoria.idiomaDestino
 
 if(!idioma){
-
 return "Idioma destino não definido"
-
 }
 
 return "Adaptação cultural aplicada para " + idioma
@@ -76,11 +70,8 @@ executarTraducaoEditorial(){
 let relatorio = []
 
 relatorio.push(this.analisarGenero())
-
 relatorio.push(this.protegerEstiloAutoral())
-
 relatorio.push(this.adaptarCulturalmente())
-
 relatorio.push(this.preservarEstruturaNarrativa())
 
 RegistroTraducaoLP.registrarExecucao(
