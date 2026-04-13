@@ -6,6 +6,10 @@
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
 <script src="core_traducao_lp.js"></script>
+<script src="glossario_autoral_lp.js"></script>
+<script src="detector_ritmo_narrativo_lp.js"></script>
+<script src="motor_traducao_editorial_lp.js"></script>
+<script src="motor_multilingue_lp.js"></script>
 <script src="engine_traducao_lp.js"></script>
 <script src="preparador_texto_traducao_lp.js"></script>
 <script src="registro_traducao_lp.js"></script>
@@ -40,9 +44,10 @@ font-size:16px;
 }
 
 .container{
-max-width:1000px;
+max-width:1100px;
 margin:0 auto;
 padding:30px 20px;
+box-sizing:border-box;
 }
 
 .painel{
@@ -88,16 +93,23 @@ background:#82c4ff;
 margin-top:22px;
 }
 
+.titulo-bloco{
+font-size:18px;
+font-weight:bold;
+margin-bottom:8px;
+color:#dbe8f4;
+}
+
 .output{
 margin-top:20px;
-background:#122637;
+background:#0c1b28;
 border:1px solid #31506b;
 border-radius:10px;
 padding:18px;
 white-space:pre-wrap;
 word-break:break-word;
 line-height:1.6;
-min-height:120px;
+min-height:180px;
 }
 
 .back{
@@ -116,93 +128,167 @@ text-decoration:underline;
 function executarTraducao(){
 let idioma = document.getElementById("idiomaDestino").value
 let resposta = EngineTraducaoLP.executarTraducao(idioma)
-document.getElementById("saida").innerText = resposta
+saida(resposta)
+}
+
+function executarMotorEditorial(){
+saida(
+MotorTraducaoEditorialLP.executarTraducaoEditorial()
+)
+}
+
+function executarMultilingue(){
+saida(
+MotorMultilingueLP.executarTraducaoMultilingue()
+)
+}
+
+function verIdiomasGerados(){
+saida(
+MotorMultilingueLP.verIdiomasGerados()
+)
+}
+
+function limparIdiomasGerados(){
+saida(
+MotorMultilingueLP.limparIdiomasGerados()
+)
+}
+
+function receberPacoteLP(){
+saida(
+PonteLPSegundaLinguas.enviarPacoteTraducao()
+)
+}
+
+function verPacoteRecebidoLP(){
+saida(
+PonteLPSegundaLinguas.verPacoteTraducao()
+)
+}
+
+function limparPacoteRecebidoLP(){
+saida(
+PonteLPSegundaLinguas.limparPacoteTraducao()
+)
+}
+
+function verStatus(){
+saida(
+JSON.stringify(
+EngineTraducaoLP.status(),
+null,
+2
+)
+)
 }
 
 function verResultadoTraducao(){
-let resposta = OrquestradorTraducaoLP.verResultado()
-document.getElementById("saida").innerText = resposta
+saida(
+OrquestradorTraducaoLP.verResultado()
+)
 }
 
 function limparResultadoTraducao(){
-let resposta = OrquestradorTraducaoLP.limparResultado()
-document.getElementById("saida").innerText = resposta
+saida(
+OrquestradorTraducaoLP.limparResultado()
+)
 }
 
 function verHistoricoTraducao(){
-let resposta = RegistroTraducaoLP.verHistorico()
-document.getElementById("saida").innerText = resposta
+saida(
+RegistroTraducaoLP.verHistorico()
+)
 }
 
 function verUltimaExecucaoTraducao(){
 let resposta = RegistroTraducaoLP.ultimaExecucao()
-document.getElementById("saida").innerText =
+
+saida(
 typeof resposta === "string"
 ? resposta
 : JSON.stringify(resposta, null, 2)
+)
 }
 
 function exportarHistoricoTraducao(){
-let resposta = RegistroTraducaoLP.exportarHistorico()
-document.getElementById("saida").innerText = resposta
+saida(
+RegistroTraducaoLP.exportarHistorico()
+)
 }
 
 function limparHistoricoTraducao(){
-let resposta = RegistroTraducaoLP.limparHistorico()
-document.getElementById("saida").innerText = resposta
+saida(
+RegistroTraducaoLP.limparHistorico()
+)
 }
 
 function verTextoPreparado(){
 let resposta = PreparadorTextoTraducaoLP.prepararTexto()
-document.getElementById("saida").innerText =
-resposta || "Texto não disponível para preparação"
-}
 
-function verStatusEngineTraducao(){
-let resposta = EngineTraducaoLP.status()
-document.getElementById("saida").innerText =
-JSON.stringify(resposta, null, 2)
+saida(
+resposta || "Texto não disponível para preparação"
+)
 }
 
 function salvarMemoriaTraducao(){
-let resposta = MemoriaTraducaoLP.salvarMemoria()
-document.getElementById("saida").innerText = resposta
+saida(
+MemoriaTraducaoLP.salvarMemoria()
+)
 }
 
 function carregarMemoriaTraducao(){
 let resposta = MemoriaTraducaoLP.carregarMemoria()
-document.getElementById("saida").innerText =
+
+saida(
 resposta + "\n\n" + MemoriaTraducaoLP.verMemoria()
+)
 }
 
 function verMemoriaTraducao(){
-let resposta = MemoriaTraducaoLP.verMemoria()
-document.getElementById("saida").innerText = resposta
+saida(
+MemoriaTraducaoLP.verMemoria()
+)
 }
 
 function limparMemoriaTraducao(){
-let resposta = MemoriaTraducaoLP.limparMemoria()
-document.getElementById("saida").innerText = resposta
-}
-
-function receberPacoteLP(){
-let resposta = PonteLPSegundaLinguas.enviarPacoteTraducao()
-document.getElementById("saida").innerText = resposta
-}
-
-function verPacoteRecebidoLP(){
-let resposta = PonteLPSegundaLinguas.verPacoteTraducao()
-document.getElementById("saida").innerText = resposta
-}
-
-function limparPacoteRecebidoLP(){
-let resposta = PonteLPSegundaLinguas.limparPacoteTraducao()
-document.getElementById("saida").innerText = resposta
+saida(
+MemoriaTraducaoLP.limparMemoria()
+)
 }
 
 function resetarCoreTraducao(){
-let resposta = CoreTraducaoLP.resetar()
-document.getElementById("saida").innerText = resposta
+saida(
+CoreTraducaoLP.resetar()
+)
+}
+
+function extrairGlossario(){
+saida(
+GlossarioAutoralLP.extrairTermos()
+)
+}
+
+function verGlossario(){
+saida(
+GlossarioAutoralLP.verGlossario()
+)
+}
+
+function limparGlossario(){
+saida(
+GlossarioAutoralLP.limparGlossario()
+)
+}
+
+function analisarRitmoNarrativo(){
+saida(
+DetectorRitmoNarrativoLP.executarAnalise()
+)
+}
+
+function saida(texto){
+document.getElementById("saida").innerText = texto
 }
 </script>
 </head>
@@ -211,7 +297,7 @@ document.getElementById("saida").innerText = resposta
 
 <header>
 <h1>Segunda Língua(s)</h1>
-<div class="sub">Módulo simbiótico de tradução editorial</div>
+<div class="sub">Motor de internacionalização editorial</div>
 </header>
 
 <div class="container">
@@ -229,24 +315,44 @@ document.getElementById("saida").innerText = resposta
 </select>
 
 <div class="blocos">
+<div class="titulo-bloco">Integração com Lapidar Pensante</div>
 <button onclick="receberPacoteLP()">Receber obra do Lapidar Pensante</button>
 <button onclick="verPacoteRecebidoLP()">Ver pacote recebido</button>
 <button onclick="limparPacoteRecebidoLP()">Limpar pacote recebido</button>
 </div>
 
 <div class="blocos">
-<button onclick="executarTraducao()">Executar tradução simbiótica</button>
+<div class="titulo-bloco">Tradução principal</div>
+<button onclick="executarTraducao()">Executar tradução</button>
+<button onclick="executarMotorEditorial()">Executar motor editorial</button>
 <button onclick="verTextoPreparado()">Ver texto preparado</button>
-<button onclick="verStatusEngineTraducao()">Ver status do engine/core</button>
+<button onclick="verStatus()">Ver status do sistema</button>
 <button onclick="resetarCoreTraducao()">Resetar core</button>
 </div>
 
 <div class="blocos">
+<div class="titulo-bloco">Internacionalização multilíngue</div>
+<button onclick="executarMultilingue()">Executar multilíngue paralelo</button>
+<button onclick="verIdiomasGerados()">Ver idiomas gerados</button>
+<button onclick="limparIdiomasGerados()">Limpar idiomas gerados</button>
+</div>
+
+<div class="blocos">
+<div class="titulo-bloco">Glossário e ritmo narrativo</div>
+<button onclick="extrairGlossario()">Extrair glossário autoral</button>
+<button onclick="verGlossario()">Ver glossário autoral</button>
+<button onclick="limparGlossario()">Limpar glossário autoral</button>
+<button onclick="analisarRitmoNarrativo()">Analisar ritmo narrativo</button>
+</div>
+
+<div class="blocos">
+<div class="titulo-bloco">Resultados</div>
 <button onclick="verResultadoTraducao()">Ver resultado da tradução</button>
 <button onclick="limparResultadoTraducao()">Limpar resultado</button>
 </div>
 
 <div class="blocos">
+<div class="titulo-bloco">Histórico</div>
 <button onclick="verHistoricoTraducao()">Ver histórico</button>
 <button onclick="verUltimaExecucaoTraducao()">Ver última execução</button>
 <button onclick="exportarHistoricoTraducao()">Exportar histórico</button>
@@ -254,13 +360,14 @@ document.getElementById("saida").innerText = resposta
 </div>
 
 <div class="blocos">
+<div class="titulo-bloco">Memória do módulo</div>
 <button onclick="salvarMemoriaTraducao()">Salvar memória</button>
 <button onclick="carregarMemoriaTraducao()">Carregar memória</button>
 <button onclick="verMemoriaTraducao()">Ver memória</button>
 <button onclick="limparMemoriaTraducao()">Limpar memória</button>
 </div>
 
-<div id="saida" class="output">Aguardando comando do módulo Segunda Língua(s)...</div>
+<div id="saida" class="output">Sistema pronto para internacionalização simbiótica</div>
 
 </div>
 
