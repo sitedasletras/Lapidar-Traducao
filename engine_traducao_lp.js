@@ -4,90 +4,92 @@ Segunda Língua(s) — Lapidar
 
 Responsável por:
 
-– receber texto preparado
-– identificar idioma origem
+– receber pacote do Lapidar Pensante
+– carregar texto no Core
 – definir idioma destino
-– acionar preparação estrutural
-– registrar histórico de tradução
+– preparar o fluxo tradutório
+– acionar o orquestrador
 */
 
 
 const EngineTraducaoLP = {
 
-textoAtual:null,
-
-idiomaOrigem:"portugues",
-
-idiomaDestino:null,
-
-
 executarTraducao(idioma){
 
 if(!idioma){
-
 return "Idioma destino não informado"
-
 }
 
+let pacote = null
 
-this.idiomaDestino = idioma
+try{
+const bruto = localStorage.getItem("lp_segunda_linguas_bridge")
 
+if(bruto){
+pacote = JSON.parse(bruto)
+}
+}catch(e){
+return "Falha ao ler pacote tradutório"
+}
+
+if(!pacote || !pacote.textoBase || pacote.textoBase.trim()===""){
+return "Nenhum pacote tradutório disponível"
+}
+
+let retorno = []
+
+retorno.push(
+CoreTraducaoLP.carregarTexto(pacote)
+)
+
+retorno.push(
+CoreTraducaoLP.definirIdiomaDestino(idioma)
+)
 
 RegistroTraducaoLP.registrarExecucao(
 "traducao_iniciada_para_" + idioma
 )
 
+retorno.push(
+this.prepararTraducao()
+)
 
-return this.prepararTraducao()
+return retorno.join("\n")
 
 },
-
 
 
 prepararTraducao(){
 
 let resposta = PreparadorTextoTraducaoLP.prepararTexto()
 
-
 if(!resposta){
-
 return "Texto não disponível para tradução"
-
 }
 
+CoreTraducaoLP.registrarTextoPreparado(resposta)
 
 return this.executarPipelineTraducao()
 
 },
 
 
-
 executarPipelineTraducao(){
 
-OrquestradorTraducaoLP.executarFluxo()
+let resposta = OrquestradorTraducaoLP.executarFluxo()
 
-return "Pipeline de tradução executado para " + this.idiomaDestino
+return resposta
 
 },
 
 
-
 status(){
 
-return {
-
-origem:this.idiomaOrigem,
-
-destino:this.idiomaDestino,
-
-texto:this.textoAtual ? "carregado" : "não carregado"
+return CoreTraducaoLP.status()
 
 }
 
 }
 
 
-}
-
-
-console.log("ENGINE TRADUÇÃO LP ATIVO")
+console.log("ENGINE TRADUÇÃO LP ATIVA")
