@@ -6,8 +6,6 @@
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
-
 <script src="core_traducao_lp.js"></script>
 <script src="glossario_autoral_lp.js"></script>
 <script src="detector_ritmo_narrativo_lp.js"></script>
@@ -18,7 +16,9 @@
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
 <script src="memoria_traducao_lp.js"></script>
+<script src="leitor_arquivo_traducao_lp.js"></script>
 <script src="upload_arquivo_traducao_lp.js"></script>
+<script src="exportador_traducao_lp.js"></script>
 
 <style>
 body{
@@ -202,17 +202,35 @@ saida(resposta.join("\n"))
 
 async function carregarArquivoLivro(){
 
-let resultado = await UploadArquivoTraducaoLP.processarArquivo("arquivoLivro")
+let resultado = null
+
+if(typeof UploadArquivoTraducaoLP !== "undefined" && UploadArquivoTraducaoLP.processarArquivo){
+resultado = await UploadArquivoTraducaoLP.processarArquivo("arquivoLivro")
+}else if(typeof LeitorArquivoTraducaoLP !== "undefined" && LeitorArquivoTraducaoLP.carregarArquivo){
+resultado = await LeitorArquivoTraducaoLP.carregarArquivo("arquivoLivro")
+}else{
+saida("Nenhum leitor de arquivo disponível.")
+return
+}
 
 if(!resultado.sucesso){
 saida(resultado.mensagem)
 return
 }
 
+if(typeof UploadArquivoTraducaoLP !== "undefined" && UploadArquivoTraducaoLP.preencherPainel){
 UploadArquivoTraducaoLP.preencherPainel(resultado)
+}else{
+document.getElementById("textoLivro").value = resultado.texto || ""
+
+if(!document.getElementById("tituloLivro").value.trim()){
+let nomeSemExtensao = (resultado.nome || "arquivo").replace(/\.[^/.]+$/, "")
+document.getElementById("tituloLivro").value = nomeSemExtensao
+}
+}
 
 if(typeof RegistroTraducaoLP !== "undefined"){
-RegistroTraducaoLP.registrarExecucao("arquivo_"+resultado.tipo+"_carregado")
+RegistroTraducaoLP.registrarExecucao("arquivo_" + (resultado.tipo || "desconhecido") + "_carregado")
 }
 
 saida(resultado.mensagem + "\nArquivo: " + resultado.nome)
@@ -267,6 +285,30 @@ OrquestradorTraducaoLP.verResultado()
 function limparResultadoTraducao(){
 saida(
 OrquestradorTraducaoLP.limparResultado()
+)
+}
+
+function exportarTXTTraducao(){
+saida(
+ExportadorTraducaoLP.exportarTXT()
+)
+}
+
+function exportarRelatorioEditorialTraducao(){
+saida(
+ExportadorTraducaoLP.exportarRelatorioEditorial()
+)
+}
+
+function exportarMultilingueTraducao(){
+saida(
+ExportadorTraducaoLP.exportarMultilingue()
+)
+}
+
+function exportarHistoricoJSONTraducao(){
+saida(
+ExportadorTraducaoLP.exportarHistorico()
 )
 }
 
@@ -462,9 +504,13 @@ document.getElementById("saida").innerText = texto
 </div>
 
 <div class="blocos">
-<div class="titulo-bloco">Resultados</div>
+<div class="titulo-bloco">Resultados e exportação</div>
 <button onclick="verResultadoTraducao()">Ver resultado da tradução</button>
 <button onclick="limparResultadoTraducao()">Limpar resultado</button>
+<button onclick="exportarTXTTraducao()">Exportar TXT</button>
+<button onclick="exportarRelatorioEditorialTraducao()">Exportar relatório editorial</button>
+<button onclick="exportarMultilingueTraducao()">Exportar multilíngue</button>
+<button onclick="exportarHistoricoJSONTraducao()">Exportar histórico JSON</button>
 </div>
 
 <div class="blocos">
