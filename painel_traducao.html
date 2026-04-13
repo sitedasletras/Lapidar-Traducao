@@ -15,7 +15,6 @@
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
 <script src="memoria_traducao_lp.js"></script>
-<script src="ponte_lp_segunda_linguas.js"></script>
 
 <style>
 body{
@@ -60,25 +59,35 @@ box-sizing:border-box;
 
 label{
 display:block;
-margin-bottom:10px;
-font-size:18px;
+margin:14px 0 8px;
+font-size:17px;
 font-weight:bold;
+color:#e4eef7;
 }
 
-select, button{
+input, select, textarea, button{
 padding:12px 14px;
-margin:8px 8px 8px 0;
+margin:6px 8px 6px 0;
 font-size:16px;
 border-radius:8px;
 border:none;
 box-sizing:border-box;
+font-family:Arial, sans-serif;
 }
 
-select{
-min-width:240px;
+input, select, textarea{
+width:100%;
+max-width:100%;
+}
+
+textarea{
+min-height:260px;
+resize:vertical;
+line-height:1.6;
 }
 
 button{
+width:auto;
 background:#5fb3ff;
 color:#082033;
 font-weight:bold;
@@ -90,13 +99,13 @@ background:#82c4ff;
 }
 
 .blocos{
-margin-top:22px;
+margin-top:24px;
 }
 
 .titulo-bloco{
 font-size:18px;
 font-weight:bold;
-margin-bottom:8px;
+margin-bottom:10px;
 color:#dbe8f4;
 }
 
@@ -122,9 +131,59 @@ cursor:pointer;
 .back:hover{
 text-decoration:underline;
 }
+
+.grid-duplo{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px;
+}
+
+@media (max-width: 800px){
+.grid-duplo{
+grid-template-columns:1fr;
+}
+}
 </style>
 
 <script>
+function carregarLivroNoCore(){
+
+let titulo = document.getElementById("tituloLivro").value.trim()
+let autor = document.getElementById("autorLivro").value.trim()
+let genero = document.getElementById("generoLivro").value.trim()
+let texto = document.getElementById("textoLivro").value.trim()
+let idioma = document.getElementById("idiomaDestino").value
+
+if(!texto){
+saida("Cole o texto do livro antes de carregar no Core.")
+return
+}
+
+let pacote = {
+titulo: titulo || "sem_titulo",
+autor: autor || "sem_autor",
+genero: genero || "nao_identificado",
+estrutura: "obra_carregada_manual",
+textoBase: texto
+}
+
+let resposta = []
+
+resposta.push(CoreTraducaoLP.carregarTexto(pacote))
+resposta.push(CoreTraducaoLP.definirIdiomaDestino(idioma))
+
+localStorage.setItem(
+"lp_segunda_linguas_bridge",
+JSON.stringify(pacote)
+)
+
+if(typeof RegistroTraducaoLP !== "undefined"){
+RegistroTraducaoLP.registrarExecucao("livro_carregado_manual_no_core")
+}
+
+saida(resposta.join("\n"))
+}
+
 function executarTraducao(){
 let idioma = document.getElementById("idiomaDestino").value
 let resposta = EngineTraducaoLP.executarTraducao(idioma)
@@ -152,24 +211,6 @@ MotorMultilingueLP.verIdiomasGerados()
 function limparIdiomasGerados(){
 saida(
 MotorMultilingueLP.limparIdiomasGerados()
-)
-}
-
-function receberPacoteLP(){
-saida(
-PonteLPSegundaLinguas.enviarPacoteTraducao()
-)
-}
-
-function verPacoteRecebidoLP(){
-saida(
-PonteLPSegundaLinguas.verPacoteTraducao()
-)
-}
-
-function limparPacoteRecebidoLP(){
-saida(
-PonteLPSegundaLinguas.limparPacoteTraducao()
 )
 }
 
@@ -287,6 +328,23 @@ DetectorRitmoNarrativoLP.executarAnalise()
 )
 }
 
+function limparCamposLivro(){
+document.getElementById("tituloLivro").value = ""
+document.getElementById("autorLivro").value = ""
+document.getElementById("generoLivro").value = ""
+document.getElementById("textoLivro").value = ""
+saida("Campos do livro limpos.")
+}
+
+function preencherExemplo(){
+document.getElementById("tituloLivro").value = "Título de Exemplo"
+document.getElementById("autorLivro").value = "Autor de Exemplo"
+document.getElementById("generoLivro").value = "romance literário"
+document.getElementById("textoLivro").value =
+"Capítulo 1\n\nA praça respirava como um animal ferido. O som não vinha apenas do vento atravessando as copas das árvores, mas do atrito constante entre a cidade e os que não cabiam nela.\n\nEle se sentou no degrau lateral da igreja, onde a luz do poste alcançava metade do rosto e deixava a outra metade na sombra."
+saida("Exemplo carregado nos campos.")
+}
+
 function saida(texto){
 document.getElementById("saida").innerText = texto
 }
@@ -304,8 +362,24 @@ document.getElementById("saida").innerText = texto
 
 <div class="painel">
 
-<label for="idiomaDestino">Escolha o idioma de destino</label>
+<div class="titulo-bloco">Dados do livro</div>
 
+<div class="grid-duplo">
+<div>
+<label for="tituloLivro">Título</label>
+<input type="text" id="tituloLivro" placeholder="Digite o título do livro">
+</div>
+
+<div>
+<label for="autorLivro">Autor</label>
+<input type="text" id="autorLivro" placeholder="Digite o nome do autor">
+</div>
+</div>
+
+<label for="generoLivro">Gênero</label>
+<input type="text" id="generoLivro" placeholder="Ex.: romance literário, poesia, fantasia, conto">
+
+<label for="idiomaDestino">Escolha o idioma de destino</label>
 <select id="idiomaDestino">
 <option value="ingles">Inglês</option>
 <option value="espanhol">Espanhol</option>
@@ -314,11 +388,14 @@ document.getElementById("saida").innerText = texto
 <option value="alemao">Alemão</option>
 </select>
 
+<label for="textoLivro">Texto do livro</label>
+<textarea id="textoLivro" placeholder="Cole aqui o capítulo, conto ou livro para tradução..."></textarea>
+
 <div class="blocos">
-<div class="titulo-bloco">Integração com Lapidar Pensante</div>
-<button onclick="receberPacoteLP()">Receber obra do Lapidar Pensante</button>
-<button onclick="verPacoteRecebidoLP()">Ver pacote recebido</button>
-<button onclick="limparPacoteRecebidoLP()">Limpar pacote recebido</button>
+<div class="titulo-bloco">Entrada manual do livro</div>
+<button onclick="carregarLivroNoCore()">Carregar livro no Core</button>
+<button onclick="preencherExemplo()">Preencher exemplo</button>
+<button onclick="limparCamposLivro()">Limpar campos</button>
 </div>
 
 <div class="blocos">
@@ -367,7 +444,7 @@ document.getElementById("saida").innerText = texto
 <button onclick="limparMemoriaTraducao()">Limpar memória</button>
 </div>
 
-<div id="saida" class="output">Sistema pronto para internacionalização simbiótica</div>
+<div id="saida" class="output">Cole o texto do livro, carregue no Core e execute a tradução.</div>
 
 </div>
 
