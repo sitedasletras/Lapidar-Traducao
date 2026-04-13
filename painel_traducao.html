@@ -6,6 +6,8 @@
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+
 <script src="core_traducao_lp.js"></script>
 <script src="glossario_autoral_lp.js"></script>
 <script src="detector_ritmo_narrativo_lp.js"></script>
@@ -16,7 +18,7 @@
 <script src="registro_traducao_lp.js"></script>
 <script src="orquestrador_traducao_lp.js"></script>
 <script src="memoria_traducao_lp.js"></script>
-<script src="leitor_arquivo_traducao_lp.js"></script>
+<script src="upload_arquivo_traducao_lp.js"></script>
 
 <style>
 body{
@@ -153,6 +155,12 @@ grid-template-columns:1fr;
 }
 </style>
 
+<script type="module">
+import * as pdfjsLibModule from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+window.pdfjsLib = pdfjsLibModule;
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+</script>
+
 <script>
 function carregarLivroNoCore(){
 
@@ -186,7 +194,7 @@ JSON.stringify(pacote)
 )
 
 if(typeof RegistroTraducaoLP !== "undefined"){
-RegistroTraducaoLP.registrarExecucao("livro_carregado_manual_no_core")
+RegistroTraducaoLP.registrarExecucao("livro_carregado_no_core")
 }
 
 saida(resposta.join("\n"))
@@ -194,21 +202,20 @@ saida(resposta.join("\n"))
 
 async function carregarArquivoLivro(){
 
-let retorno = await LeitorArquivoTraducaoLP.carregarArquivo("arquivoLivro")
+let resultado = await UploadArquivoTraducaoLP.processarArquivo("arquivoLivro")
 
-if(!retorno.sucesso){
-saida(retorno.mensagem)
+if(!resultado.sucesso){
+saida(resultado.mensagem)
 return
 }
 
-document.getElementById("textoLivro").value = retorno.texto || ""
+UploadArquivoTraducaoLP.preencherPainel(resultado)
 
-if(!document.getElementById("tituloLivro").value.trim()){
-let nomeSemExtensao = retorno.nome.replace(/\.[^/.]+$/, "")
-document.getElementById("tituloLivro").value = nomeSemExtensao
+if(typeof RegistroTraducaoLP !== "undefined"){
+RegistroTraducaoLP.registrarExecucao("arquivo_"+resultado.tipo+"_carregado")
 }
 
-saida(retorno.mensagem + "\nArquivo: " + retorno.nome)
+saida(resultado.mensagem + "\nArquivo: " + resultado.nome)
 }
 
 function executarTraducao(){
@@ -416,8 +423,8 @@ document.getElementById("saida").innerText = texto
 <option value="alemao">Alemão</option>
 </select>
 
-<label for="arquivoLivro">Arquivo do livro (.txt ou .docx)</label>
-<input type="file" id="arquivoLivro" accept=".txt,.docx">
+<label for="arquivoLivro">Arquivo do livro (.txt, .docx ou .pdf)</label>
+<input type="file" id="arquivoLivro" accept=".txt,.docx,.pdf">
 
 <label for="textoLivro">Texto do livro</label>
 <textarea id="textoLivro" placeholder="Cole aqui o capítulo, conto ou livro para tradução..."></textarea>
@@ -485,4 +492,4 @@ document.getElementById("saida").innerText = texto
 </div>
 
 </body>
-</html>o 
+</html>
