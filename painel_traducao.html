@@ -6,6 +6,7 @@
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
 <script src="core_traducao_lp.js"></script>
 <script src="glossario_autoral_lp.js"></script>
@@ -20,6 +21,7 @@
 <script src="leitor_arquivo_traducao_lp.js"></script>
 <script src="upload_arquivo_traducao_lp.js"></script>
 <script src="exportador_traducao_lp.js"></script>
+<script src="exportador_docx_traducao_lp.js"></script>
 
 <style>
 body{
@@ -163,9 +165,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 </script>
 
 <script>
-/*
-SEGMENTADOR DE CAPÍTULOS INTEGRADO AO PAINEL
-*/
 const SegmentadorCapitulosTraducaoLP = {
 
 estrutura: [],
@@ -180,7 +179,6 @@ mensagem:"Texto não disponível"
 }
 
 const textoNormalizado = texto.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-
 const linhas = textoNormalizado.split("\n")
 const estrutura = []
 let blocoAtual = null
@@ -339,30 +337,6 @@ RegistroTraducaoLP.registrarExecucao("traducao_por_capitulos_executada")
 return resultadoFinal.join("\n\n")
 },
 
-traduzirCapituloIndividual(indice, idioma){
-
-if(!this.estrutura[indice]){
-return "Capítulo não encontrado"
-}
-
-const bloco = this.estrutura[indice]
-
-const pacote = {
-titulo: bloco.titulo || ("Bloco " + (indice + 1)),
-autor: document.getElementById("autorLivro").value.trim() || "sem_autor",
-genero: document.getElementById("generoLivro").value.trim() || "nao_identificado",
-estrutura: bloco.tipo || "capitulo",
-textoBase: bloco.conteudo || ""
-}
-
-localStorage.setItem(
-"lp_segunda_linguas_bridge",
-JSON.stringify(pacote)
-)
-
-return EngineTraducaoLP.executarTraducao(idioma)
-},
-
 limparEstrutura(){
 this.estrutura = []
 return "Estrutura segmentada limpa"
@@ -517,6 +491,18 @@ ExportadorTraducaoLP.exportarMultilingue()
 function exportarHistoricoJSONTraducao(){
 saida(
 ExportadorTraducaoLP.exportarHistorico()
+)
+}
+
+async function exportarDOCXTraducaoFinal(){
+saida(
+await ExportadorDOCXTraducaoLP.exportarDOCXResultado()
+)
+}
+
+async function exportarDOCXCapitulos(){
+saida(
+await ExportadorDOCXTraducaoLP.exportarDOCXPorCapitulos()
 )
 }
 
@@ -759,6 +745,8 @@ document.getElementById("saida").innerText = texto
 <button onclick="exportarRelatorioEditorialTraducao()">Exportar relatório editorial</button>
 <button onclick="exportarMultilingueTraducao()">Exportar multilíngue</button>
 <button onclick="exportarHistoricoJSONTraducao()">Exportar histórico JSON</button>
+<button onclick="exportarDOCXTraducaoFinal()">Exportar DOCX final</button>
+<button onclick="exportarDOCXCapitulos()">Exportar DOCX capítulos</button>
 </div>
 
 <div class="blocos">
