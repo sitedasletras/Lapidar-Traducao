@@ -6,6 +6,7 @@
 <title>Painel Segunda Língua(s) — Lapidar</title>
 
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
 <script src="core_traducao_lp.js"></script>
 <script src="glossario_autoral_lp.js"></script>
 <script src="detector_ritmo_narrativo_lp.js"></script>
@@ -128,7 +129,7 @@ padding:18px;
 white-space:pre-wrap;
 word-break:break-word;
 line-height:1.6;
-min-height:180px;
+min-height:220px;
 }
 
 .back{
@@ -162,6 +163,213 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 </script>
 
 <script>
+/*
+SEGMENTADOR DE CAPÍTULOS INTEGRADO AO PAINEL
+*/
+const SegmentadorCapitulosTraducaoLP = {
+
+estrutura: [],
+
+detectarCapitulos(texto){
+
+if(!texto || !texto.trim()){
+return {
+sucesso:false,
+mensagem:"Texto não disponível"
+}
+}
+
+const textoNormalizado = texto.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+
+const linhas = textoNormalizado.split("\n")
+const estrutura = []
+let blocoAtual = null
+
+for(let i = 0; i < linhas.length; i++){
+
+const linhaOriginal = linhas[i]
+const linha = linhaOriginal.trim()
+
+if(!linha){
+if(blocoAtual){
+blocoAtual.conteudo += "\n"
+}
+continue
+}
+
+const ehCapitulo =
+/^(cap[ií]tulo\s+\d+|cap[ií]tulo\s+[ivxlcdm]+|chapter\s+\d+|chapter\s+[ivxlcdm]+)$/i.test(linha)
+
+const ehPrologo =
+/^pr[oó]logo$/i.test(linha)
+
+const ehEpilogo =
+/^ep[ií]logo$/i.test(linha)
+
+if(ehCapitulo || ehPrologo || ehEpilogo){
+
+if(blocoAtual){
+estrutura.push(blocoAtual)
+}
+
+blocoAtual = {
+tipo: ehPrologo ? "prologo" : (ehEpilogo ? "epilogo" : "capitulo"),
+titulo: linha,
+conteudo: ""
+}
+
+}else{
+
+if(!blocoAtual){
+blocoAtual = {
+tipo:"texto_inicial",
+titulo:"Texto inicial",
+conteudo:""
+}
+}
+
+blocoAtual.conteudo += (blocoAtual.conteudo ? "\n" : "") + linhaOriginal
+}
+}
+
+if(blocoAtual){
+estrutura.push(blocoAtual)
+}
+
+if(!estrutura.length){
+this.estrutura = [{
+tipo:"texto_unico",
+titulo:"Texto integral",
+conteudo:textoNormalizado
+}]
+
+return {
+sucesso:true,
+mensagem:"Nenhuma estrutura detectada — tratado como texto único"
+}
+}
+
+this.estrutura = estrutura
+
+return {
+sucesso:true,
+mensagem: estrutura.length + " blocos estruturais detectados"
+}
+},
+
+detectarPrologoEpilogo(){
+
+if(!this.estrutura.length){
+return "Nenhuma estrutura detectada ainda"
+}
+
+this.estrutura = this.estrutura.map((bloco) => {
+
+const titulo = (bloco.titulo || "").trim()
+
+if(/^pr[oó]logo$/i.test(titulo)){
+bloco.tipo = "prologo"
+}
+
+if(/^ep[ií]logo$/i.test(titulo)){
+bloco.tipo = "epilogo"
+}
+
+return bloco
+})
+
+return "Prólogo e epílogo verificados"
+},
+
+listarEstrutura(){
+
+if(!this.estrutura.length){
+return "Nenhuma estrutura disponível"
+}
+
+return this.estrutura.map((bloco, i) => {
+const tamanho = (bloco.conteudo || "").length
+return (i + 1) + " — " + bloco.tipo + " — " + bloco.titulo + " — " + tamanho + " caracteres"
+}).join("\n")
+},
+
+traduzirPorCapitulo(idioma){
+
+if(!this.estrutura.length){
+return "Estrutura não detectada ainda"
+}
+
+if(typeof EngineTraducaoLP === "undefined"){
+return "Engine de tradução indisponível"
+}
+
+let resultadoFinal = []
+
+for(let i = 0; i < this.estrutura.length; i++){
+
+const bloco = this.estrutura[i]
+
+const pacote = {
+titulo: bloco.titulo || ("Bloco " + (i + 1)),
+autor: document.getElementById("autorLivro").value.trim() || "sem_autor",
+genero: document.getElementById("generoLivro").value.trim() || "nao_identificado",
+estrutura: bloco.tipo || "capitulo",
+textoBase: bloco.conteudo || ""
+}
+
+localStorage.setItem(
+"lp_segunda_linguas_bridge",
+JSON.stringify(pacote)
+)
+
+const traducao = EngineTraducaoLP.executarTraducao(idioma)
+
+resultadoFinal.push(
+"====================\n" +
+(pacote.titulo || ("Bloco " + (i + 1))) +
+"\n====================\n" +
+traducao
+)
+}
+
+if(typeof RegistroTraducaoLP !== "undefined"){
+RegistroTraducaoLP.registrarExecucao("traducao_por_capitulos_executada")
+}
+
+return resultadoFinal.join("\n\n")
+},
+
+traduzirCapituloIndividual(indice, idioma){
+
+if(!this.estrutura[indice]){
+return "Capítulo não encontrado"
+}
+
+const bloco = this.estrutura[indice]
+
+const pacote = {
+titulo: bloco.titulo || ("Bloco " + (indice + 1)),
+autor: document.getElementById("autorLivro").value.trim() || "sem_autor",
+genero: document.getElementById("generoLivro").value.trim() || "nao_identificado",
+estrutura: bloco.tipo || "capitulo",
+textoBase: bloco.conteudo || ""
+}
+
+localStorage.setItem(
+"lp_segunda_linguas_bridge",
+JSON.stringify(pacote)
+)
+
+return EngineTraducaoLP.executarTraducao(idioma)
+},
+
+limparEstrutura(){
+this.estrutura = []
+return "Estrutura segmentada limpa"
+}
+
+}
+
 function carregarLivroNoCore(){
 
 let titulo = document.getElementById("tituloLivro").value.trim()
@@ -404,6 +612,37 @@ DetectorRitmoNarrativoLP.executarAnalise()
 )
 }
 
+function detectarCapitulos(){
+let texto = document.getElementById("textoLivro").value
+let resposta = SegmentadorCapitulosTraducaoLP.detectarCapitulos(texto)
+saida(resposta.mensagem)
+}
+
+function detectarPrologoEpilogo(){
+saida(
+SegmentadorCapitulosTraducaoLP.detectarPrologoEpilogo()
+)
+}
+
+function listarEstruturaDetectada(){
+saida(
+SegmentadorCapitulosTraducaoLP.listarEstrutura()
+)
+}
+
+function traduzirPorCapitulos(){
+let idioma = document.getElementById("idiomaDestino").value
+saida(
+SegmentadorCapitulosTraducaoLP.traduzirPorCapitulo(idioma)
+)
+}
+
+function limparEstruturaSegmentada(){
+saida(
+SegmentadorCapitulosTraducaoLP.limparEstrutura()
+)
+}
+
 function limparCamposLivro(){
 document.getElementById("tituloLivro").value = ""
 document.getElementById("autorLivro").value = ""
@@ -418,7 +657,7 @@ document.getElementById("tituloLivro").value = "Título de Exemplo"
 document.getElementById("autorLivro").value = "Autor de Exemplo"
 document.getElementById("generoLivro").value = "romance literário"
 document.getElementById("textoLivro").value =
-"Capítulo 1\n\nA praça respirava como um animal ferido. O som não vinha apenas do vento atravessando as copas das árvores, mas do atrito constante entre a cidade e os que não cabiam nela.\n\nEle se sentou no degrau lateral da igreja, onde a luz do poste alcançava metade do rosto e deixava a outra metade na sombra."
+"PRÓLOGO\n\nA cidade não dormia, apenas fingia.\n\nCAPÍTULO 1\n\nA praça respirava como um animal ferido. O som não vinha apenas do vento atravessando as copas das árvores, mas do atrito constante entre a cidade e os que não cabiam nela.\n\nCAPÍTULO 2\n\nEle se sentou no degrau lateral da igreja, onde a luz do poste alcançava metade do rosto e deixava a outra metade na sombra.\n\nEPÍLOGO\n\nNada terminava de fato; apenas mudava de idioma."
 saida("Exemplo carregado nos campos.")
 }
 
@@ -486,6 +725,15 @@ document.getElementById("saida").innerText = texto
 <button onclick="verTextoPreparado()">Ver texto preparado</button>
 <button onclick="verStatus()">Ver status do sistema</button>
 <button onclick="resetarCoreTraducao()">Resetar core</button>
+</div>
+
+<div class="blocos">
+<div class="titulo-bloco">Segmentação por capítulos</div>
+<button onclick="detectarCapitulos()">Detectar capítulos</button>
+<button onclick="detectarPrologoEpilogo()">Detectar prólogo / epílogo</button>
+<button onclick="listarEstruturaDetectada()">Listar estrutura detectada</button>
+<button onclick="traduzirPorCapitulos()">Traduzir por capítulos</button>
+<button onclick="limparEstruturaSegmentada()">Limpar estrutura segmentada</button>
 </div>
 
 <div class="blocos">
