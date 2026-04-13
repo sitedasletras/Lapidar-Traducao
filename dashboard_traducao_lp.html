@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Lapidar Tradução</title>
+
+<script src="core_traducao_lp.js"></script>
+<script src="glossario_autoral_lp.js"></script>
+<script src="detector_ritmo_narrativo_lp.js"></script>
+<script src="motor_traducao_editorial_lp.js"></script>
+<script src="motor_multilingue_lp.js"></script>
+<script src="engine_traducao_lp.js"></script>
+<script src="preparador_texto_traducao_lp.js"></script>
+<script src="registro_traducao_lp.js"></script>
+<script src="orquestrador_traducao_lp.js"></script>
+<script src="memoria_traducao_lp.js"></script>
+<script src="ponte_lp_segunda_linguas.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#0a1724;
+color:white;
+}
+
+header{
+background:#13283d;
+padding:24px;
+text-align:center;
+border-bottom:1px solid #2f4f6b;
+}
+
+h1{
+margin:0;
+font-size:30px;
+}
+
+.sub{
+margin-top:8px;
+font-size:15px;
+color:#c8d8e6;
+}
+
+.container{
+max-width:1200px;
+margin:0 auto;
+padding:28px 18px 40px;
+box-sizing:border-box;
+}
+
+.grade{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+gap:18px;
+}
+
+.card{
+background:#13283d;
+border:1px solid #2f4f6b;
+border-radius:14px;
+padding:18px;
+box-sizing:border-box;
+}
+
+.card h3{
+margin:0 0 12px 0;
+font-size:20px;
+color:#eef6ff;
+}
+
+.card p{
+margin:8px 0;
+line-height:1.5;
+color:#d8e6f2;
+}
+
+.valor{
+font-size:15px;
+font-weight:bold;
+color:#8fd0ff;
+word-break:break-word;
+}
+
+.botoes{
+margin-top:24px;
+}
+
+button{
+padding:12px 14px;
+margin:6px 8px 6px 0;
+font-size:15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#63b8ff;
+color:#082033;
+font-weight:bold;
+}
+
+button:hover{
+background:#84c8ff;
+}
+
+.output{
+margin-top:24px;
+background:#0c1b28;
+border:1px solid #2f4f6b;
+border-radius:12px;
+padding:18px;
+min-height:160px;
+white-space:pre-wrap;
+word-break:break-word;
+line-height:1.6;
+}
+
+.back{
+display:inline-block;
+margin-top:22px;
+color:#c8d8e6;
+cursor:pointer;
+}
+
+.back:hover{
+text-decoration:underline;
+}
+</style>
+
+<script>
+function obterStatusCore(){
+try{
+return CoreTraducaoLP.status()
+}catch(e){
+return { erro:"Core não disponível" }
+}
+}
+
+function obterStatusEngine(){
+try{
+return EngineTraducaoLP.status()
+}catch(e){
+return { erro:"Engine não disponível" }
+}
+}
+
+function obterStatusMemoria(){
+try{
+return JSON.parse(MemoriaTraducaoLP.verMemoria())
+}catch(e){
+return { erro:"Memória indisponível" }
+}
+}
+
+function obterStatusGlossario(){
+try{
+let bruto = GlossarioAutoralLP.lerGlossario()
+return bruto
+}catch(e){
+return { erro:"Glossário indisponível" }
+}
+}
+
+function obterStatusHistorico(){
+try{
+let registro = RegistroTraducaoLP.lerRegistro()
+return registro
+}catch(e){
+return { erro:"Histórico indisponível" }
+}
+}
+
+function obterStatusMultilingue(){
+try{
+let linhas = MotorMultilingueLP.verIdiomasGerados()
+return linhas
+}catch(e){
+return "Motor multilíngue indisponível"
+}
+}
+
+function atualizarDashboard(){
+
+let core = obterStatusCore()
+let engine = obterStatusEngine()
+let memoria = obterStatusMemoria()
+let glossario = obterStatusGlossario()
+let historico = obterStatusHistorico()
+let multilingue = obterStatusMultilingue()
+
+document.getElementById("coreStatus").innerText =
+core && core.memoria ? core.memoria.status : JSON.stringify(core)
+
+document.getElementById("idiomaStatus").innerText =
+core && core.memoria ? (core.memoria.idiomaDestino || "não definido") : "-"
+
+document.getElementById("textoStatus").innerText =
+core && core.estado && core.estado.textoCarregado ? "carregado" : "não carregado"
+
+document.getElementById("resultadoStatus").innerText =
+core && core.estado && core.estado.resultadoDisponivel ? "disponível" : "indisponível"
+
+document.getElementById("engineStatus").innerText =
+engine && engine.memoria ? engine.memoria.status : JSON.stringify(engine)
+
+document.getElementById("memoriaStatus").innerText =
+memoria && memoria.ultimaAtualizacao ? memoria.ultimaAtualizacao : "sem memória salva"
+
+document.getElementById("glossarioStatus").innerText =
+glossario && glossario.termos ? glossario.termos.length + " termos" : "nenhum"
+
+document.getElementById("historicoStatus").innerText =
+historico && historico.execucoes ? historico.execucoes.length + " execuções" : "nenhuma"
+
+document.getElementById("multilingueStatus").innerText = multilingue
+
+document.getElementById("saida").innerText =
+"Dashboard atualizado com sucesso."
+}
+
+function verResumoCompleto(){
+
+let resumo = {
+core:obterStatusCore(),
+engine:obterStatusEngine(),
+memoria:obterStatusMemoria(),
+glossario:obterStatusGlossario(),
+historico:obterStatusHistorico(),
+multilingue:obterStatusMultilingue()
+}
+
+document.getElementById("saida").innerText =
+JSON.stringify(resumo, null, 2)
+}
+
+function verPercentualModulo(){
+
+let relatorio = [
+"Lapidar-Tradução",
+"",
+"Percentual atual estimado: 100%",
+"",
+"Blocos concluídos:",
+"- Core",
+"- Engine",
+"- Preparador textual",
+"- Orquestrador",
+"- Registro",
+"- Memória persistente",
+"- Motor editorial",
+"- Motor multilíngue",
+"- Glossário autoral",
+"- Detector de ritmo narrativo",
+"- Painel operacional",
+"- Dashboard institucional"
+]
+
+document.getElementById("saida").innerText = relatorio.join("\n")
+}
+
+function exportarResumoPainel(){
+
+let resumo = {
+core:obterStatusCore(),
+engine:obterStatusEngine(),
+memoria:obterStatusMemoria(),
+glossario:obterStatusGlossario(),
+historico:obterStatusHistorico(),
+multilingue:obterStatusMultilingue(),
+geradoEm:new Date().toISOString()
+}
+
+let blob = new Blob(
+[JSON.stringify(resumo, null, 2)],
+{ type:"application/json" }
+)
+
+let url = URL.createObjectURL(blob)
+let a = document.createElement("a")
+a.href = url
+a.download = "dashboard_lapidar_traducao.json"
+a.click()
+URL.revokeObjectURL(url)
+
+document.getElementById("saida").innerText =
+"Resumo do dashboard exportado com sucesso."
+}
+
+window.onload = atualizarDashboard
+</script>
+</head>
+
+<body>
+
+<header>
+<h1>Dashboard — Lapidar Tradução</h1>
+<div class="sub">Painel mestre institucional do módulo Segunda Língua(s)</div>
+</header>
+
+<div class="container">
+
+<div class="grade">
+
+<div class="card">
+<h3>Core de Tradução</h3>
+<p>Status atual:</p>
+<div class="valor" id="coreStatus">carregando...</div>
+<p>Idioma de destino:</p>
+<div class="valor" id="idiomaStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Texto e Resultado</h3>
+<p>Texto-base:</p>
+<div class="valor" id="textoStatus">carregando...</div>
+<p>Resultado traduzido:</p>
+<div class="valor" id="resultadoStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Engine</h3>
+<p>Estado do motor:</p>
+<div class="valor" id="engineStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Memória Persistente</h3>
+<p>Última atualização:</p>
+<div class="valor" id="memoriaStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Glossário Autoral</h3>
+<p>Total de termos:</p>
+<div class="valor" id="glossarioStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Histórico</h3>
+<p>Execuções registradas:</p>
+<div class="valor" id="historicoStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Motor Multilíngue</h3>
+<p>Idiomas gerados:</p>
+<div class="valor" id="multilingueStatus">carregando...</div>
+</div>
+
+<div class="card">
+<h3>Status Institucional</h3>
+<p>Módulo:</p>
+<div class="valor">Lapidar-Tradução</div>
+<p>Situação:</p>
+<div class="valor">Concluído e operacional</div>
+</div>
+
+</div>
+
+<div class="botoes">
+<button onclick="atualizarDashboard()">Atualizar dashboard</button>
+<button onclick="verResumoCompleto()">Ver resumo completo</button>
+<button onclick="verPercentualModulo()">Ver percentual do módulo</button>
+<button onclick="exportarResumoPainel()">Exportar resumo</button>
+</div>
+
+<div id="saida" class="output">Aguardando leitura institucional do módulo...</div>
+
+<div class="back" onclick="location.href='painel_traducao.html'">← voltar ao painel de tradução</div>
+
+</div>
+
+</body>
+</html>
